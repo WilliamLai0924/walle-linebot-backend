@@ -50,6 +50,12 @@ def callback():
 def handle_message(event):
     line_bot_api.reply_message(event.reply_token, TextSendMessage(text=str(f'{event}')))
 
+def call_api(url:str):
+    requests.get(url)
+
+# add scheduler
+scheduler.add_job(call_api,'interval',minutes=12,args=['https://walle-linebot-backend.onrender.com//api/hello'])
+scheduler.start()
 
 if __name__ == '__main__':
     app.run(debug=True)
