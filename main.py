@@ -29,6 +29,22 @@ whhandler = WebhookHandler(SECRET)
 @app.route('/api/hello', methods=['GET'])
 def hello():
     return jsonify({'message':'Hi~'})
+  
+@app.route('/callback', methods=['POST'])
+def callback():
+    # 確認請求來自 LINE
+    signature = request.headers['X-Line-Signature']
+
+    # 獲取請求主體
+    body = request.get_data(as_text=True)
+    app.logger.info(f"Request body: {body}")
+
+    try:
+        whhandler.handle(body, signature)
+    except InvalidSignatureError:
+        abort(400)
+
+    return 'OK'
 
 @whhandler.add(MessageEvent,message=TextMessage)
 def handle_message(event):
