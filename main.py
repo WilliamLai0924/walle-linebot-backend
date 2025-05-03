@@ -3,14 +3,13 @@ from flask import Flask, abort, jsonify, request
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import PostbackEvent, TextSendMessage, MessageEvent, TextMessage
-from apscheduler.schedulers.background import BackgroundScheduler
 
+import llm
 import requests
 import configparser
 import os
 
 app = Flask(__name__)
-scheduler = BackgroundScheduler()
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -48,14 +47,7 @@ def callback():
 
 @whhandler.add(MessageEvent,message=TextMessage)
 def handle_message(event):
-    line_bot_api.reply_message(event.reply_token, TextSendMessage(text=str(f'{event}')))
-
-def call_api(url:str):
-    requests.get(url)
-
-# add scheduler
-scheduler.add_job(call_api,'interval',minutes=12,args=['https://walle-linebot-backend.onrender.com//api/hello'])
-scheduler.start()
+    line_bot_api.reply_message(event.reply_token, TextSendMessage(text=llm.chat(event.message.text)))
 
 if __name__ == '__main__':
     app.run(debug=True)
